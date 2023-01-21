@@ -1,0 +1,24 @@
+# Copy to /etc/systemd/system/mattermost-bot.service
+# systemctl daemon-reload
+# sudo systemctl enable mattermost-bot
+# sudo systemctl start mattermost-bot
+[Unit]
+Description=Mattermost Bot
+ConditionPathExists=/opt/mattermost-bot
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/mattermost-bot
+ExecStart=/opt/mattermost-bot/mattermost-bot
+Restart=always
+RestartSec=45
+KillSignal=SIGINT
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=mattermost-bot
+
+[Install]
+WantedBy=multi-user.target
