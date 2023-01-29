@@ -3,6 +3,7 @@ package oc
 import (
 	"errors"
 	"fmt"
+	"mattermost-bot/confighandler"
 	"mattermost-bot/utils"
 	"os"
 	"os/exec"
@@ -53,29 +54,27 @@ func ValidCommand(words []string, message string) (string, bool) {
 
 func Execute(words []string, message string) (string, error) {
 	var cmdout string
-	executable := "/usr/local/bin/oc"
+	executable := confighandler.App.Config.MB_OC_EXECUTABLE
 	// Check if executable exist
 	_, error := os.Stat(executable)
 	if os.IsNotExist(error) {
-		fmt.Printf("%v does not exist.\n", executable)
+		//fmt.Printf("%v does not exist.\n", executable)
+		confighandler.App.Logger.Info().Str("function", "oc_Execute").Str("type", "response").Msg(executable + " does not exist.")
 		return executable + " does not exist.", nil
 	}
 	cmd := strings.Replace(message, "!oc", executable, -1)
 	// Check if command is a valid command
 	reason, valid := ValidCommand(words, message)
 	if valid {
-		fmt.Printf("Request: %v\n", cmd)
+		confighandler.App.Logger.Info().Str("function", "oc_Execute").Str("type", "request").Msg(cmd)
 		args := strings.Split(cmd, " ")
 		cmd := exec.Command(args[0], args[1:]...)
 		output, err := cmd.CombinedOutput()
 		if err != nil {
-			// Print stderr on error
-			fmt.Println("Response:")
-			fmt.Println(fmt.Sprint(err) + ": " + string(output))
+			confighandler.App.Logger.Error().Err(err).Str("function", "oc_Execute").Str("type", "response").Msg(string(output))
 			cmdout = fmt.Sprintf("%s \n %s", err, output)
 		} else {
-			fmt.Println("Response:")
-			fmt.Println(string(output))
+			confighandler.App.Logger.Info().Str("function", "oc_Execute").Str("type", "response").Msg(string(output))
 			cmdout = string(output)
 		}
 		return cmdout, nil

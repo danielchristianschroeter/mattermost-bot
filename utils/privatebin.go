@@ -2,28 +2,38 @@ package utils
 
 import (
 	"fmt"
+	"mattermost-bot/confighandler"
 	"net/url"
+	"strconv"
 
 	"github.com/gearnode/privatebin"
 )
 
 func PrivateBinPaste(msg string) (string, error) {
-	if GetConfigBoolValue("PRIVATEBIN_ENABLE") {
-		uri, err := url.Parse(GetConfigValue("PRIVATEBIN_HOST"))
+	if confighandler.App.Config.MB_PRIVATEBIN_ENABLE == "true" {
+		uri, err := url.Parse(confighandler.App.Config.MB_PRIVATEBIN_HOST)
 		if err != nil {
-			fmt.Printf("cannot parse host in PRIVATEBIN_HOST")
+			confighandler.App.Logger.Error().Err(err).Str("function", "PrivateBinPaste").Str("type", "response").Msg("Cannot parse host in PRIVATEBIN_HOST")
+		}
+		// Convert string value to bool
+		opendiscussion, err := strconv.ParseBool(confighandler.App.Config.MB_PRIVATEBIN_OPENDISCUSSION)
+		if err != nil {
+			confighandler.App.Logger.Error().Err(err).Str("function", "PrivateBinPaste_ParseBool").Str("type", "response").Msg("Cannot parse bool in MB_PRIVATEBIN_OPENDISCUSSION")
+		}
+		burnafterreading, err := strconv.ParseBool(confighandler.App.Config.MB_PRIVATEBIN_BURNAFTERREADING)
+		if err != nil {
+			confighandler.App.Logger.Error().Err(err).Str("function", "PrivateBinPaste_ParseBool").Str("type", "response").Msg("Cannot parse bool in MB_PRIVATEBIN_BURNAFTERREADING")
 		}
 		client := privatebin.NewClient(uri, "", "")
-
 		resp, err := client.CreatePaste(
 			msg,
-			GetConfigValue("PRIVATEBIN_EXPIRE"),
-			GetConfigValue("PRIVATEBIN_FORMATTER"),
-			GetConfigBoolValue("PRIVATEBIN_OPENDISCUSSION"),
-			GetConfigBoolValue("PRIVATEBIN_BURNAFTERREADING"),
-			GetConfigValue("PRIVATEBIN_PASSWORD"))
+			confighandler.App.Config.MB_PRIVATEBIN_EXPIRE,
+			confighandler.App.Config.MB_PRIVATEBIN_FORMATTER,
+			opendiscussion,
+			burnafterreading,
+			confighandler.App.Config.MB_PRIVATEBIN_PASSWORD)
 		if err != nil {
-			fmt.Printf("cannot create the paste: %v", err)
+			confighandler.App.Logger.Error().Err(err).Str("function", "PrivateBinPaste_CreatePaste").Str("type", "response").Msg("Cannot create the paste")
 			return "", err
 		}
 		fmt.Printf("%s\n", resp.URL)

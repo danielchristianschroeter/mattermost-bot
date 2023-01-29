@@ -3,6 +3,7 @@ package govc
 import (
 	"errors"
 	"fmt"
+	"mattermost-bot/confighandler"
 	"mattermost-bot/utils"
 	"os"
 	"os/exec"
@@ -24,7 +25,7 @@ func ValidCommand(words []string, message string) (string, bool) {
 			valid = false
 			return reason, valid
 		}
-		// Find without any additional commands is not allowed.
+		// Find without any additional commands is not allowed
 		if words[1] == "find" && len(words) <= 2 {
 			reason = "find without any filter not allowed. Use --help to show options."
 			valid = false
@@ -40,33 +41,30 @@ func ValidCommand(words []string, message string) (string, bool) {
 
 func Execute(words []string, message string) (string, error) {
 	var cmdout string
-	executable := "/usr/local/bin/govc"
+	executable := confighandler.App.Config.MB_GOVC_EXECUTABLE
 	// Check if executable exist
 	_, error := os.Stat(executable)
 	if os.IsNotExist(error) {
-		fmt.Printf("%v does not exist.\n", executable)
+		confighandler.App.Logger.Info().Str("function", "govc_Execute").Str("type", "response").Msg(executable + " does not exist.")
 		return executable + " does not exist.", nil
 	}
 	cmd := strings.Replace(message, KEYCOMMAND, executable, -1)
 	// Check if command is a valid command
 	reason, valid := ValidCommand(words, message)
 	if valid {
-		fmt.Printf("Request: %v\n", cmd)
-		os.Setenv("GOVC_URL", utils.GetConfigValue("GOVC_URL"))
-		os.Setenv("GOVC_DATACENTER", utils.GetConfigValue("GOVC_DATACENTER"))
-		os.Setenv("GOVC_USERNAME", utils.GetConfigValue("GOVC_USERNAME"))
-		os.Setenv("GOVC_PASSWORD", utils.GetConfigValue("GOVC_PASSWORD"))
+		confighandler.App.Logger.Info().Str("function", "govc_Execute").Str("type", "request").Msg(cmd)
+		os.Setenv("GOVC_URL", "https://"+confighandler.App.Config.MB_GOVC_HOST)
+		os.Setenv("GOVC_DATACENTER", confighandler.App.Config.MB_GOVC_DATACENTER)
+		os.Setenv("GOVC_USERNAME", confighandler.App.Config.MB_GOVC_USERNAME)
+		os.Setenv("GOVC_PASSWORD", confighandler.App.Config.MB_GOVC_PASSWORD)
 		args := strings.Split(cmd, " ")
 		cmd := exec.Command(args[0], args[1:]...)
 		output, err := cmd.CombinedOutput()
 		if err != nil {
-			// Print stderr on error
-			fmt.Println("Response:")
-			fmt.Println(fmt.Sprint(err) + ": " + string(output))
+			confighandler.App.Logger.Error().Err(err).Str("function", "govc_Execute").Str("type", "response").Msg(string(output))
 			cmdout = fmt.Sprintf("%s \n %s", err, output)
 		} else {
-			fmt.Println("Response:")
-			fmt.Println(string(output))
+			confighandler.App.Logger.Info().Str("function", "govc_Execute").Str("type", "response").Msg(string(output))
 			cmdout = string(output)
 		}
 		return cmdout, nil

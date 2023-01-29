@@ -3,6 +3,7 @@ package terraform
 import (
 	"errors"
 	"fmt"
+	"mattermost-bot/confighandler"
 	"mattermost-bot/utils"
 	"os"
 	"os/exec"
@@ -35,11 +36,11 @@ func ValidCommand(words []string, message string) (string, bool) {
 // TODO Add --auto-approve on apply
 func Execute(words []string, message string) (string, error) {
 	var cmdout string
-	executable := "/usr/bin/terraform"
+	executable := confighandler.App.Config.MB_TERRAFORM_EXECUTABLE
 	// Check if executable exist
 	_, error := os.Stat(executable)
 	if os.IsNotExist(error) {
-		fmt.Printf("%v does not exist.\n", executable)
+		confighandler.App.Logger.Info().Str("function", "terraform_Execute").Str("type", "response").Msg(executable + " does not exist.")
 		return executable + " does not exist.", nil
 	}
 	cmd := strings.Replace(message, KEYCOMMAND, executable, -1)
@@ -47,18 +48,15 @@ func Execute(words []string, message string) (string, error) {
 	// Check if command is a valid command
 	reason, valid := ValidCommand(words, message)
 	if valid {
-		fmt.Printf("Request: %v\n", cmd)
+		confighandler.App.Logger.Info().Str("function", "terraform_Execute").Str("type", "request").Msg(cmd)
 		args := strings.Split(cmd, " ")
 		cmd := exec.Command(args[0], args[1:]...)
 		output, err := cmd.CombinedOutput()
 		if err != nil {
-			// Print stderr on error
-			fmt.Println("Response:")
-			fmt.Println(fmt.Sprint(err) + ": " + string(output))
+			confighandler.App.Logger.Error().Err(err).Str("function", "terraform_Execute").Str("type", "response").Msg(string(output))
 			cmdout = fmt.Sprintf("%s \n %s", err, output)
 		} else {
-			fmt.Println("Response:")
-			fmt.Println(string(output))
+			confighandler.App.Logger.Info().Str("function", "terraform_Execute").Str("type", "response").Msg(string(output))
 			cmdout = string(output)
 		}
 		return cmdout, nil
