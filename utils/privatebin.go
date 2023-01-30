@@ -11,9 +11,9 @@ import (
 
 func PrivateBinPaste(msg string) (string, error) {
 	if confighandler.App.Config.MB_PRIVATEBIN_ENABLE == "true" {
-		uri, err := url.Parse(confighandler.App.Config.MB_PRIVATEBIN_HOST)
+		uri, err := url.Parse(confighandler.App.Config.MB_PRIVATEBIN_URL)
 		if err != nil {
-			confighandler.App.Logger.Error().Err(err).Str("function", "PrivateBinPaste").Str("type", "response").Msg("Cannot parse host in PRIVATEBIN_HOST")
+			confighandler.App.Logger.Error().Err(err).Str("function", "PrivateBinPaste").Str("type", "response").Msg("Cannot parse host in MB_PRIVATEBIN_URL")
 		}
 		// Convert string value to bool
 		opendiscussion, err := strconv.ParseBool(confighandler.App.Config.MB_PRIVATEBIN_OPENDISCUSSION)
