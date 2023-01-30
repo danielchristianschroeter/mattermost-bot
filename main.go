@@ -61,7 +61,6 @@ func main() {
 		os.Exit(1)
 	} else {
 		confighandler.App.Logger.Debug().Str("function", "main").Interface("response", resp).Interface("properties", props).Msg("Mattermost server detected")
-		//println("Mattermost Server detected and is running version " + props["Version"])
 	}
 
 	// Login with user token
@@ -121,21 +120,6 @@ func setupGracefulShutdown() {
 		}
 	}()
 }
-
-// func sendMsgToTalkingChannel(app *application, msg string, replyToId string) {
-// 	// Note that replyToId should be empty for a new post.
-// 	// All replies in a thread should reply to root.
-
-// 	post := &model.Post{}
-// 	post.ChannelId = app.mattermostChannel.Id
-// 	post.Message = msg
-
-// 	post.RootId = replyToId
-
-// 	if _, _, err := app.mattermostClient.CreatePost(post); err != nil {
-// 		confighandler.App.Logger.Error().Err(err).Str("RootID", replyToId).Msg("Failed to create post")
-// 	}
-// }
 
 func sendMsgToChannel(msg string, replyToId string, codeblock bool) {
 	// Limit output to 6315 characters
