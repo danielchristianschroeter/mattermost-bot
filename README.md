@@ -68,7 +68,7 @@ If the output exceeds the message limit from Mattermost, the full output will au
 
 `MB_PRIVATEBIN_ENABLE`: Enable or disable (true/false) Privatebin (https://github.com/PrivateBin/PrivateBin), if the response exceeds 6315 characters. 
 
-`MB_PRIVATEBIN_HOST`: The host of the Privatebin instance.
+`MB_PRIVATEBIN_URL`: The URL of the Privatebin instance.
 
 `MB_PRIVATEBIN_FORMATTER`: You can define the Privatebin formatter. (Recommendation: syntaxhighlighting).
 
@@ -80,7 +80,7 @@ If the output exceeds the message limit from Mattermost, the full output will au
 
 `MB_PRIVATEBIN_PASSWORD`: Set a Privatebin password for the generated link. (Recommendation: leave the value empty)
 
-`MB_GOVC_HOST`: Host from your vCenter Server.
+`MB_GOVC_URL`: The URL of your vCenter Server Appliance.
 
 `MB_GOVC_DATACENTER`: Datacenter of your vCenter Server.
 
