@@ -53,7 +53,7 @@ func Execute(words []string, message string) (string, error) {
 	reason, valid := ValidCommand(words, message)
 	if valid {
 		confighandler.App.Logger.Info().Str("function", "govc_Execute").Str("type", "request").Msg(cmd)
-		os.Setenv("GOVC_URL", "https://"+confighandler.App.Config.MB_GOVC_HOST)
+		os.Setenv("GOVC_URL", confighandler.App.Config.MB_GOVC_URL)
 		os.Setenv("GOVC_DATACENTER", confighandler.App.Config.MB_GOVC_DATACENTER)
 		os.Setenv("GOVC_USERNAME", confighandler.App.Config.MB_GOVC_USERNAME)
 		os.Setenv("GOVC_PASSWORD", confighandler.App.Config.MB_GOVC_PASSWORD)
