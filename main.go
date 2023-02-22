@@ -203,19 +203,24 @@ func handlePost(post *model.Post) {
 		return
 	}
 	keycommand := strings.Trim(words[0], "!")
-	if command, ok := commands[keycommand]; ok {
-		confighandler.App.Logger.Debug().Str("function", "handlePost").Str("type", "request").Interface("received_keycommand", keycommand)
-		sendMsgToChannel("Executing command...", post.Id, false)
-		cmdout, err := command.executeFn(words, post.Message)
-		if err != nil {
-			confighandler.App.Logger.Error().Stack().Err(err).Str("function", "handlePost").Msg("Executing command failed for some reason")
+	// Check if command role is listed in MB_ROLES
+	if strings.Contains(confighandler.App.Config.MB_ROLES, keycommand) {
+		if command, ok := commands[keycommand]; ok {
+			confighandler.App.Logger.Debug().Str("function", "handlePost").Str("type", "request").Interface("received_keycommand", keycommand)
+			sendMsgToChannel("Executing command...", post.Id, false)
+			cmdout, err := command.executeFn(words, post.Message)
+			if err != nil {
+				confighandler.App.Logger.Error().Stack().Err(err).Str("function", "handlePost").Msg("Executing command failed for some reason")
+			}
+			sendMsgToChannel(cmdout, post.Id, true)
 		}
-		sendMsgToChannel(cmdout, post.Id, true)
 	} else if keycommand == "help" {
 		confighandler.App.Logger.Debug().Str("function", "handlePost").Str("type", "request").Interface("received_keycommand", keycommand)
 		help := "The following commands are available to use:\n"
 		for _, command := range commands {
-			help += command.help
+			if strings.Contains(confighandler.App.Config.MB_ROLES, command.name) {
+				help += command.help
+			}
 		}
 		sendMsgToChannel(help, post.Id, false)
 		return
