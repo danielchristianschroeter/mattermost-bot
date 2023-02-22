@@ -20,7 +20,18 @@ func ValidCommand(words []string, message string) (string, bool) {
 	validcommands := []string{"init", "validate", "plan", "apply", "output", "show", "version"}
 	// Command words lengths must be equal or greater than 2
 	if words[0] == KEYCOMMAND && len(words) >= 2 {
-		if !utils.StringInSlice(words[1], validcommands) && words[1][0:strings.Index(words[1], "=")] != "-chdir" {
+		// Check if -chdir is required and in the correct position (allow required for init, validate, plan or apply)
+		if len(words) > 1 && strings.Contains(words[1], "-chdir=") {
+			if !utils.StringInSlice(words[2], []string{"init", "validate", "plan", "apply"}) {
+				reason = "-chdir only allowed for init, validate, plan or apply"
+				valid = false
+				return reason, valid
+			} else {
+				valid = true
+				return reason, valid
+			}
+		}
+		if !utils.StringInSlice(words[1], validcommands) {
 			reason = words[1] + " is not allowed with " + words[0]
 			valid = false
 			return reason, valid
@@ -30,6 +41,7 @@ func ValidCommand(words []string, message string) (string, bool) {
 		reason = "length of words is " + fmt.Sprint(len(words))
 		valid = false
 	}
+
 	return reason, valid
 }
 
